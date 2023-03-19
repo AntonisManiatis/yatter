@@ -1,8 +1,17 @@
+use clap::{command, Parser, Subcommand};
+
+#[derive(Debug, Parser)]
+#[command(author, version, about)]
+pub struct Args {
+    /// Name of the person to greet
+    #[clap(subcommand)]
+    pub action: Action,
+}
+
+#[derive(Debug, Subcommand)]
 pub enum Action {
-    PunchIn,
-    PunchOut,
-    /**
-     * Are you in? are you out? one way to find out!
-     */
+    /// Starts tracking.
+    Swipe,
+    /// Current tracking status.
     Status,
 }
