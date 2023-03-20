@@ -27,6 +27,10 @@ pub struct ParsingError(); // TODO: What else does this need?
 
 impl TS {
     pub fn parse(text: &str) -> Result<TS, ParsingError> {
+        if text.is_empty() {
+            return Ok(TS::new());
+        }
+
         // TODO: Can't I just make collect work for DateEntry?
         let mut entries: Vec<DateEntry> = vec![];
 
@@ -109,7 +113,10 @@ impl ToString for TimeSlot {
         let mut buffer = String::new();
         buffer.push_str(&self.start.as_ref().unwrap().to_string());
         buffer.push_str(TIME_SLOT_SPLIT_CHARACTER);
-        buffer.push_str(&self.end.as_ref().unwrap().to_string());
+
+        if let Some(te) = &self.end {
+            buffer.push_str(&te.to_string());
+        }
 
         buffer
     }
@@ -150,6 +157,21 @@ mod tests {
         entities::*,
         parser::{INDENTATION_CHARACTER, NEW_LINE},
     };
+
+    use super::ParsingError;
+
+    #[test]
+    fn parsing_an_empty_text_gives_an_empty_time_sheet() -> Result<(), ParsingError> {
+        // Arrange
+        let text = "";
+
+        // Act
+        let ts = TS::parse(text)?;
+
+        // Assert
+        assert_eq!(0, ts.entries.len());
+        Ok(())
+    }
 
     #[test]
     fn a_line_() {
