@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 use chrono::{Local, Timelike};
 
 /// A time sheet
@@ -69,7 +71,7 @@ pub struct DateEntry {
     pub entries: Vec<TimeSlot>,
 }
 
-/// A time slot is a start [TimeEntry]
+/// A time slot is a combination of a start [TimeEntry] and an end [TimeEntry]
 #[derive(Debug, PartialEq, Eq)]
 pub struct TimeSlot {
     pub start: Option<TimeEntry>, // TODO: We can drop the optional here. A time slot will exist when start exists.
@@ -83,10 +85,6 @@ impl TimeSlot {
             end: None,
         }
     }
-
-    pub fn append_entry(&mut self) {
-        todo!()
-    }
 }
 
 /// 0 to 23
@@ -98,6 +96,15 @@ pub type Minute = u32; // I wish this wast more strict.
 pub struct TimeEntry {
     pub hour: Hour,
     pub minute: Minute,
+}
+
+impl TimeEntry {
+    pub fn of(hour: &str, minute: &str) -> Result<TimeEntry, ParseIntError> {
+        Ok(TimeEntry {
+            hour: hour.parse::<u32>()?,
+            minute: minute.parse::<u32>()?,
+        })
+    }
 }
 
 #[cfg(test)]

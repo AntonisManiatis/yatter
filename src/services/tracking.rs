@@ -1,4 +1,7 @@
-use crate::{entities::TS, parser::ParsingError};
+use crate::{
+    entities::TS,
+    parser::{ParsingError, ToText},
+};
 
 use std::{fs, io::Error, io::ErrorKind, path::PathBuf};
 
@@ -69,7 +72,7 @@ pub fn swipe() -> Result<(), TrackError> {
     ts.append_entry_for(today);
 
     // Write the updated TS to the file (creating it if it doesn't exist).
-    fs::write(&fp, TS::to_text(&ts))?;
+    fs::write(&fp, ts.to_text())?;
 
     Ok(())
 }

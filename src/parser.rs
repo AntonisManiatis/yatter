@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 use crate::entities::*;
 
 // Text constants
@@ -22,6 +24,11 @@ const TIME_SLOT_SPLIT_CHARACTER: &str = " to ";
 /** Token required to split a time entry. */
 const TIME_ENTRY_SPLIT_CHARACTER: &str = ":";
 
+/// Converts an entity to text.
+pub trait ToText {
+    fn to_text(&self) -> String;
+}
+
 #[derive(Debug)]
 pub struct ParsingError(); // TODO: What else does this need?
 
@@ -34,10 +41,14 @@ impl TS {
         // TODO: Can't I just make collect work for DateEntry?
         let mut entries: Vec<DateEntry> = vec![];
 
+        // ? Can't I just trim all whitespaces at the start? we'll refactor this later.
         text.lines()
-            .filter(|line| line.starts_with(LINE_START_CHARACTER))
+            .filter(|line| {
+                line.trim_start_matches(SPACE_CHARACTER) // Is this okay also??
+                    .starts_with(LINE_START_CHARACTER)
+            })
             .for_each(|line| {
-                let date = line.trim_start_matches("- ");
+                let date = line.trim_start_matches(LINE_START_CHARACTER).trim(); // is this okay??
 
                 // TODO: Can't I just make collect work for DateEntry?
                 let mut t_entries: Vec<TimeSlot> = vec![];
@@ -50,13 +61,12 @@ impl TS {
                     .for_each(|te| {
                         for t in &te {
                             if t.is_empty() {
-                                println!("empty");
                                 continue;
                             }
 
                             let slot = TimeSlot::parse(t);
 
-                            t_entries.push(slot.unwrap());
+                            t_entries.push(slot.unwrap()); // TODO: No unwraps please
                         }
                     });
 
@@ -68,11 +78,13 @@ impl TS {
 
         Ok(TS { entries })
     }
+}
 
-    pub fn to_text(ts: &TS) -> String {
+impl ToText for TS {
+    fn to_text(&self) -> String {
         let mut content = String::new();
 
-        for e in &ts.entries {
+        for e in &self.entries {
             content.push_str(LINE_START_CHARACTER);
             content.push_str(SPACE_CHARACTER);
             content.push_str(&e.date);
@@ -82,12 +94,10 @@ impl TS {
                 content.push_str(INDENTATION_CHARACTER);
                 content.push_str(LINE_START_CHARACTER);
                 content.push_str(SPACE_CHARACTER);
-                content.push_str(&te.to_string());
+                content.push_str(&te.to_text());
                 content.push_str(NEW_LINE);
             }
         }
-
-        content.push_str(NEW_LINE);
 
         content
     }
@@ -97,28 +107,38 @@ impl TimeSlot {
     fn parse(line: &str) -> Result<TimeSlot, ParsingError> {
         let mut slot = line.split(TIME_SLOT_SPLIT_CHARACTER); // TODO: take care if there's or isn't a whitespace.
 
-        let te_1 = slot.next().ok_or(ParsingError())?; // TODO: What error?
-        let te_2 = slot.next().ok_or(ParsingError())?; // TODO: What error?
+        let start = slot.next().ok_or(ParsingError())?; // TODO: What error?
+        let end = slot.next().ok_or(ParsingError())?; // TODO: What error?
 
         Ok(TimeSlot {
-            start: Some(TimeEntry::parse(te_1)?),
-            end: Some(TimeEntry::parse(te_2)?),
+            start: Some(TimeEntry::parse(start)?),
+            end: match end.is_empty() {
+                true => None,
+                false => Some(TimeEntry::parse(end)?),
+            },
         })
     }
 }
 
-impl ToString for TimeSlot {
-    fn to_string(&self) -> String {
+impl ToText for TimeSlot {
+    fn to_text(&self) -> String {
         // TODO: BAD UNWRAPS!
         let mut buffer = String::new();
-        buffer.push_str(&self.start.as_ref().unwrap().to_string());
+        buffer.push_str(&self.start.as_ref().unwrap().to_text());
         buffer.push_str(TIME_SLOT_SPLIT_CHARACTER);
 
         if let Some(te) = &self.end {
-            buffer.push_str(&te.to_string());
+            buffer.push_str(&te.to_text());
         }
 
         buffer
+    }
+}
+
+impl From<ParseIntError> for ParsingError {
+    fn from(_err: ParseIntError) -> Self {
+        // TODO: Transform the parsing err.
+        ParsingError()
     }
 }
 
@@ -129,18 +149,15 @@ impl TimeEntry {
         let hour = slots.next().ok_or(ParsingError())?; // TODO: What error?
         let minute = slots.next().ok_or(ParsingError())?; // TODO: What error?
 
-        let hour = hour.parse::<u32>().unwrap(); // TODO: For now
-        let minute = minute.parse::<u32>().unwrap(); // TODO: For now
-
-        Ok(TimeEntry { hour, minute })
+        Ok(TimeEntry::of(hour, minute)?)
     }
 }
 
-impl ToString for TimeEntry {
-    fn to_string(&self) -> String {
+impl ToText for TimeEntry {
+    fn to_text(&self) -> String {
         let mut buffer = String::new();
         buffer.push_str(&self.hour.to_string());
-        buffer.push_str(":");
+        buffer.push_str(TIME_ENTRY_SPLIT_CHARACTER);
         buffer.push_str(&self.minute.to_string());
 
         buffer
@@ -149,13 +166,13 @@ impl ToString for TimeEntry {
 
 #[cfg(test)]
 mod tests {
-    use std::{time::SystemTime, vec};
+    use std::vec;
 
     use chrono::{DateTime, Local};
 
     use crate::{
         entities::*,
-        parser::{INDENTATION_CHARACTER, NEW_LINE},
+        parser::{ToText, INDENTATION_CHARACTER, NEW_LINE},
     };
 
     use super::ParsingError;
@@ -174,20 +191,69 @@ mod tests {
     }
 
     #[test]
+    fn parsing_a_single_date_line_gives_a_time_sheet_with_one_entry() -> Result<(), ParsingError> {
+        // Arrange
+        let text = "- 03/21/2023";
+
+        // Act
+        let ts = TS::parse(text)?;
+
+        // Assert
+        assert_eq!(1, ts.entries.len());
+        Ok(())
+    }
+
+    // * Idea to group whitespace related tests.
+    #[test]
+    fn parsing_a_date_line_is_not_affected_by_whitespaces() -> Result<(), ParsingError> {
+        // Arrange
+        let text = "-03/21/2023";
+
+        // Act
+        let ts = TS::parse(text)?;
+
+        // Assert
+        assert_eq!("03/21/2023", ts.entries.get(0).unwrap().date);
+        Ok(())
+    }
+
+    #[test]
+    fn parsing_a_date_line_that_has_no_slots_is_valid() -> Result<(), ParsingError> {
+        // Arrange
+        let text = "- 03/21/2023\r\n- 03/22/2023\r\n"; // ? I know rust has raw string literals, I have to look how to use em.
+
+        // Act
+        let ts = TS::parse(text)?;
+
+        // Assert
+        assert_eq!(2, ts.entries.len());
+        Ok(())
+    }
+
+    // ! Currently this is expected behaviour,
+    // ! but another option could be to just throw a ParsingError unless it's a comment.
+    #[test]
+    fn parsing_a_line_that_does_not_start_with_a_dash_is_ignored() -> Result<(), ParsingError> {
+        // Arrange
+        let text = "- 03/21/2023\r\n ignored line\r\n - 03/22/2023\r\n"; // ? I know rust has raw string literals, I have to look how to use em.
+
+        // Act
+        let ts = TS::parse(text)?;
+
+        // Assert
+        assert_eq!(2, ts.entries.len());
+        Ok(())
+    }
+
+    #[test]
     fn a_line_() {
-        let text = "- 03/14/2023\r\n\t- 10:10 to 13:15\r\n";
+        let text = "- 03/14/2023\r\n\t- 10:10 to 13:15\r\n"; // ? I know rust has raw string literals, I have to look how to use em.
 
         let entry = DateEntry {
             date: "03/14/2023".to_string(),
             entries: vec![TimeSlot {
-                start: Some(TimeEntry {
-                    hour: "10".parse::<u32>().unwrap(),
-                    minute: "10".parse::<u32>().unwrap(),
-                }),
-                end: Some(TimeEntry {
-                    hour: "13".parse::<u32>().unwrap(),
-                    minute: "15".parse::<u32>().unwrap(),
-                }),
+                start: Some(TimeEntry::of("10", "10").unwrap()),
+                end: Some(TimeEntry::of("13", "15").unwrap()),
             }],
         };
 
@@ -205,10 +271,7 @@ mod tests {
 
         let actual = TimeEntry::parse(&time_entry);
 
-        let expected = TimeEntry {
-            hour: "10".parse::<u32>().unwrap(),
-            minute: "10".parse::<u32>().unwrap(),
-        };
+        let expected = TimeEntry::of("10", "10").unwrap();
 
         assert_eq!(expected, actual.unwrap())
     }
@@ -229,43 +292,46 @@ mod tests {
         let actual = TimeSlot::parse(time_slot);
 
         let expected = TimeSlot {
-            start: Some(TimeEntry {
-                hour: "10".parse::<u32>().unwrap(),
-                minute: "00".parse::<u32>().unwrap(),
-            }),
-            end: Some(TimeEntry {
-                hour: "15".parse::<u32>().unwrap(),
-                minute: "00".parse::<u32>().unwrap(),
-            }),
+            start: Some(TimeEntry::of("10", "00").unwrap()),
+            end: Some(TimeEntry::of("15", "00").unwrap()),
         };
 
         assert_eq!(expected, actual.unwrap());
     }
 
     #[test]
+    fn try_parsing_an_incomplete_time_slot() -> Result<(), ParsingError> {
+        let ts = "10:00 to ";
+
+        let actual = TimeSlot::parse(ts)?;
+
+        let expected = TimeSlot {
+            start: Some(TimeEntry::of("10", "00").unwrap()),
+            end: None,
+        };
+
+        assert_eq!(expected, actual);
+        Ok(())
+    }
+
+    #[test]
     fn to_text_writes() {
         // rename this test case, it's horrible :D
-        let today: DateTime<Local> = SystemTime::now().into();
+        let now: DateTime<Local> = Local::now();
 
-        let date = today.format("%m-%d-%Y").to_string();
+        let date = now.format("%m-%d-%Y").to_string();
         let entry = DateEntry {
             date: date.to_string(),
             entries: vec![TimeSlot {
-                start: Some(TimeEntry {
-                    hour: "10".parse::<u32>().unwrap(),
-                    minute: "10".parse::<u32>().unwrap(),
-                }),
-                end: Some(TimeEntry {
-                    hour: "10".parse::<u32>().unwrap(),
-                    minute: "10".parse::<u32>().unwrap(),
-                }),
+                start: Some(TimeEntry::of("10", "10").unwrap()),
+                end: Some(TimeEntry::of("10", "10").unwrap()),
             }],
         };
 
         let entries = vec![entry];
         let ts = TS { entries };
 
-        let content = TS::to_text(&ts);
+        let content = ts.to_text();
 
         let mut expected = String::new();
         expected.push_str(&format!("- {}", &date));
@@ -273,7 +339,6 @@ mod tests {
         expected.push_str(INDENTATION_CHARACTER);
         expected.push_str("- 10:10 to 10:10");
         expected.push_str(NEW_LINE);
-        expected.push_str(NEW_LINE); // Not sure if this is EOF universally.
 
         assert_eq!(expected, content);
     }
