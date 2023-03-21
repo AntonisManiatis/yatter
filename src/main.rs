@@ -5,7 +5,7 @@ mod services;
 
 use clap::Parser;
 use cli::Args;
-use services::tracking::{swipe, TrackError};
+use services::tracking::{punch, TrackError};
 
 use crate::cli::Action;
 
@@ -13,7 +13,7 @@ fn main() -> Result<(), TrackError> {
     let args = Args::parse();
 
     match args.action {
-        Action::Swipe => swipe(),
+        Action::Punch => punch(),
         Action::Status => todo!(),
     }
 }

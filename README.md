@@ -77,7 +77,7 @@ And you have a task that you'd like to track your time for `project_x`.
 Open up a terminal and type:
 
 ```
-yatter [name-of-record-command] ./work/project_one
+yatter punch ./work/project_one
 ```
 
 if you have a lil' peek into `./work/project_one/` now you'll find that `yatter` has created a directory called `hours/{current-year}/` and in it there's a file called `{MM-YYYY}` where MM and YYYY are the current month & year.
@@ -95,10 +95,10 @@ I use nvim BTW. (that's a lie I use vscode, I just wanted to sound cool)
 	- 09:14 to
 ```
 
-We have a new entry! Splendid! So after our work it done we can do:
+We have a new entry! Splendid! So after our work is done we can do:
 
 ```
-yatter [name-of-stop-recoding-command] ./work/project_x
+yatter punch ./work/project_x
 ```
 
 if we were to re-open the hour log file now we'd see another entry appended at the end:
@@ -118,9 +118,9 @@ yatter --help
 
 Here are a few ideas/features that I'll implement in the future:
 
-- Automatic checkouts(TODO: change with command name) when you switch projects.
+- Automatic punch-out when you switch projects.
+- Explore the possibility for a `git` integration using hooks.
 - Possibility to send timesheets to other web-based time tracking services like HeavenHR, etc with a push of a button (or command in our case 😄).
-- Explore the possibility for a `git` integration.
 
 ## Contributing
 

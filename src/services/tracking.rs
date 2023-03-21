@@ -51,8 +51,8 @@ impl From<Error> for TrackError {
     }
 }
 
-/// Swipes in or out
-pub fn swipe() -> Result<(), TrackError> {
+/// Inserts a time record based on the system's local datetime.
+pub fn punch() -> Result<(), TrackError> {
     let now = Local::now();
 
     let dp: PathBuf = [DEFAULT_DIR_NAME, &now.year().to_string()].iter().collect();

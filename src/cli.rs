@@ -10,8 +10,8 @@ pub struct Args {
 
 #[derive(Debug, Subcommand)]
 pub enum Action {
-    /// Starts tracking.
-    Swipe,
+    /// Inserts a time record based on the system's local time at the time the command was invoked.
+    Punch,
     /// Current tracking status.
     Status,
 }
