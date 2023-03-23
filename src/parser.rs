@@ -156,6 +156,8 @@ impl TimeEntry {
 impl ToText for TimeEntry {
     fn to_text(&self) -> String {
         let mut buffer = String::new();
+        // TODO: it'd be ideal to print 03 instead of 3.
+
         buffer.push_str(&self.hour.to_string());
         buffer.push_str(TIME_ENTRY_SPLIT_CHARACTER);
         buffer.push_str(&self.minute.to_string());

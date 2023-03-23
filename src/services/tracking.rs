@@ -52,10 +52,18 @@ impl From<Error> for TrackError {
 }
 
 /// Inserts a time record based on the system's local datetime.
-pub fn punch() -> Result<(), TrackError> {
+pub fn punch(target_project: Option<PathBuf>) -> Result<(), TrackError> {
     let now = Local::now();
 
-    let dp: PathBuf = [DEFAULT_DIR_NAME, &now.year().to_string()].iter().collect();
+    let mut dp: PathBuf = PathBuf::new();
+
+    if let Some(tp) = target_project {
+        dp.push(tp)
+    }
+
+    dp.push(DEFAULT_DIR_NAME);
+    dp.push(now.year().to_string());
+
     fs::create_dir_all(&dp)?;
 
     let fp = find_file_for_date(&dp, &now);

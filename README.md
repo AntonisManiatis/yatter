@@ -82,13 +82,15 @@ yatter punch ./work/project_one
 
 if you have a lil' peek into `./work/project_one/` now you'll find that `yatter` has created a directory called `hours/{current-year}/` and in it there's a file called `{MM-YYYY}` where MM and YYYY are the current month & year.
 
-Let's open it using our favourite editor and see what's inside!
+To check the status:
 
 ```
-nvim ./work/project_x/hours/2023/03-2023
+yatter status ./work/project_x/
 ```
 
-I use nvim BTW. (that's a lie I use vscode, I just wanted to sound cool)
+<!-- TODO: touch this section up a bit. -->
+
+You get:
 
 ```
 - 19-03-2023
