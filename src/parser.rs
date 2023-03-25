@@ -156,11 +156,22 @@ impl TimeEntry {
 impl ToText for TimeEntry {
     fn to_text(&self) -> String {
         let mut buffer = String::new();
-        // TODO: it'd be ideal to print 03 instead of 3.
 
-        buffer.push_str(&self.hour.to_string());
+        // ? perhaps not the greatest implementation but it works :D
+        let mut hour = self.hour.to_string();
+        if hour.len() != 2 {
+            hour.insert_str(0, "0");
+        }
+
+        buffer.push_str(&hour);
         buffer.push_str(TIME_ENTRY_SPLIT_CHARACTER);
-        buffer.push_str(&self.minute.to_string());
+
+        let mut minute = self.minute.to_string();
+        if minute.len() != 2 {
+            minute.insert_str(0, "0");
+        }
+
+        buffer.push_str(&minute);
 
         buffer
     }
@@ -170,12 +181,7 @@ impl ToText for TimeEntry {
 mod tests {
     use std::vec;
 
-    use chrono::{DateTime, Local};
-
-    use crate::{
-        entities::*,
-        parser::{ToText, INDENTATION_CHARACTER, NEW_LINE},
-    };
+    use crate::entities::*;
 
     use super::ParsingError;
 
@@ -316,32 +322,55 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn to_text_writes() {
-        // rename this test case, it's horrible :D
-        let now: DateTime<Local> = Local::now();
+    mod printing {
+        use chrono::{DateTime, Local};
 
-        let date = now.format("%m-%d-%Y").to_string();
-        let entry = DateEntry {
-            date: date.to_string(),
-            entries: vec![TimeSlot {
-                start: Some(TimeEntry::of("10", "10").unwrap()),
-                end: Some(TimeEntry::of("10", "10").unwrap()),
-            }],
+        use crate::{
+            entities::{DateEntry, TimeEntry, TimeSlot, TS},
+            parser::{ParsingError, ToText, INDENTATION_CHARACTER, NEW_LINE},
         };
 
-        let entries = vec![entry];
-        let ts = TS { entries };
+        #[test]
+        fn to_text_for_a_time_entry_prints_time_with_correct_zeros_if_hour_or_minute_is_single_digit(
+        ) -> Result<(), ParsingError> {
+            // Arrange
+            let entry = TimeEntry::of("9", "13")?;
 
-        let content = ts.to_text();
+            // Act
+            let text = entry.to_text();
 
-        let mut expected = String::new();
-        expected.push_str(&format!("- {}", &date));
-        expected.push_str(NEW_LINE);
-        expected.push_str(INDENTATION_CHARACTER);
-        expected.push_str("- 10:10 to 10:10");
-        expected.push_str(NEW_LINE);
+            // Assert
+            assert_eq!("09:13", text);
+            Ok(())
+        }
 
-        assert_eq!(expected, content);
+        #[test]
+        fn to_text_writes() {
+            // rename this test case, it's horrible :D
+            let now: DateTime<Local> = Local::now();
+
+            let date = now.format("%m-%d-%Y").to_string();
+            let entry = DateEntry {
+                date: date.to_string(),
+                entries: vec![TimeSlot {
+                    start: Some(TimeEntry::of("10", "10").unwrap()),
+                    end: Some(TimeEntry::of("10", "10").unwrap()),
+                }],
+            };
+
+            let entries = vec![entry];
+            let ts = TS { entries };
+
+            let content = ts.to_text();
+
+            let mut expected = String::new();
+            expected.push_str(&format!("- {}", &date));
+            expected.push_str(NEW_LINE);
+            expected.push_str(INDENTATION_CHARACTER);
+            expected.push_str("- 10:10 to 10:10");
+            expected.push_str(NEW_LINE);
+
+            assert_eq!(expected, content);
+        }
     }
 }

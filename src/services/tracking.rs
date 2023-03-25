@@ -1,5 +1,5 @@
 use crate::{
-    entities::TS,
+    entities::{Punch, TS},
     parser::{ParsingError, ToText},
 };
 
@@ -52,7 +52,7 @@ impl From<Error> for TrackError {
 }
 
 /// Inserts a time record based on the system's local datetime.
-pub fn punch(target_project: Option<PathBuf>) -> Result<(), TrackError> {
+pub fn punch(target_project: Option<PathBuf>) -> Result<Punch, TrackError> {
     let now = Local::now();
 
     let mut dp: PathBuf = PathBuf::new();
@@ -77,12 +77,18 @@ pub fn punch(target_project: Option<PathBuf>) -> Result<(), TrackError> {
     }
 
     let today = now.format(DATE_FORMAT).to_string();
-    ts.append_entry_for(today);
+    ts.append_entry_for(&today);
+
+    let punch = ts.get_last_punch_for(&today);
 
     // Write the updated TS to the file (creating it if it doesn't exist).
     fs::write(&fp, ts.to_text())?;
 
-    Ok(())
+    if let Some(punch) = punch {
+        return Ok(punch);
+    }
+
+    Err(TrackError::NotFound)
 }
 
 fn find_file_for_date(dir_path: &PathBuf, date: &DateTime<Local>) -> PathBuf {

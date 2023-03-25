@@ -1,6 +1,12 @@
-use std::num::ParseIntError;
+use std::{fmt::Display, num::ParseIntError};
 
 use chrono::{Local, Timelike};
+
+#[derive(Debug)]
+pub enum Punch {
+    In(TimeEntry),
+    Out(TimeEntry),
+}
 
 /// A time sheet
 #[derive(Debug, PartialEq, Eq)]
@@ -13,7 +19,7 @@ impl TS {
         TS { entries: vec![] }
     }
 
-    pub fn append_entry_for(&mut self, date: String) {
+    pub fn append_entry_for(&mut self, date: &str) {
         let date_entry = self.entries.iter_mut().filter(|e| e.date == date).next();
 
         let now = Local::now().time();
@@ -47,7 +53,7 @@ impl TS {
             }
             None => {
                 let date_entry = DateEntry {
-                    date,
+                    date: date.to_owned(), // it's okay lets make a copy here.
                     entries: vec![TimeSlot::new(TimeEntry {
                         hour: now.hour(),
                         minute: now.minute(),
@@ -57,6 +63,15 @@ impl TS {
                 self.entries.push(date_entry);
             }
         }
+    }
+
+    pub fn get_last_punch_for(&mut self, date: &str) -> Option<Punch> {
+        let date_entry = self.entries.iter_mut().filter(|e| e.date == date).next();
+
+        let now = Local::now().time();
+
+        // TODO: Find this
+        Some(Punch::In(TimeEntry { hour: 1, minute: 1 }))
     }
 }
 
@@ -107,6 +122,13 @@ impl TimeEntry {
     }
 }
 
+impl Display for TimeEntry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // TODO: Parser has similar logic.
+        write!(f, "{}:{}", self.hour, self.minute)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{DateEntry, TimeEntry, TimeSlot, TS};
@@ -120,7 +142,7 @@ mod tests {
         let mut ts = TS::new();
 
         // Act
-        ts.append_entry_for(DATE.to_string());
+        ts.append_entry_for(DATE);
 
         // Assert
         assert_eq!(1, ts.entries.len());
@@ -143,7 +165,7 @@ mod tests {
         };
 
         // Act
-        ts.append_entry_for("3/18/2023".to_string());
+        ts.append_entry_for("3/18/2023");
 
         // Assert
         assert_eq!(1, ts.entries.len());
@@ -175,7 +197,7 @@ mod tests {
         };
 
         // Act
-        ts.append_entry_for("3/18/2023".to_string());
+        ts.append_entry_for("3/18/2023");
 
         // Assert
         assert_eq!(1, ts.entries.len());
