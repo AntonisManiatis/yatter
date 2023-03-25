@@ -1,4 +1,4 @@
-use std::{fmt::Display, num::ParseIntError};
+use std::{collections::HashMap, fmt::Display, num::ParseIntError};
 
 use chrono::{Local, Timelike};
 
@@ -11,16 +11,18 @@ pub enum Punch {
 /// A time sheet
 #[derive(Debug, PartialEq, Eq)]
 pub struct TS {
-    pub entries: Vec<DateEntry>, // * could have been a Dictionary/Map honestly.
+    pub entries: HashMap<String, DateEntry>,
 }
 
 impl TS {
     pub fn new() -> Self {
-        TS { entries: vec![] }
+        TS {
+            entries: HashMap::new(),
+        }
     }
 
     pub fn append_entry_for(&mut self, date: &str) {
-        let date_entry = self.entries.iter_mut().filter(|e| e.date == date).next();
+        let date_entry = self.entries.get_mut(date);
 
         let now = Local::now().time();
 
@@ -60,13 +62,13 @@ impl TS {
                     })],
                 };
 
-                self.entries.push(date_entry);
+                self.entries.insert(date_entry.date.to_owned(), date_entry);
             }
         }
     }
 
     pub fn get_last_punch_for(&mut self, date: &str) -> Option<Punch> {
-        let date_entry = self.entries.iter_mut().filter(|e| e.date == date).next();
+        let date_entry = self.entries.get(date);
 
         let now = Local::now().time();
 
@@ -131,6 +133,8 @@ impl Display for TimeEntry {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::{DateEntry, TimeEntry, TimeSlot, TS};
 
     const DATE: &str = "3/18/2023";
@@ -146,7 +150,7 @@ mod tests {
 
         // Assert
         assert_eq!(1, ts.entries.len());
-        assert_eq!(1, ts.entries.get(0).unwrap().entries.len())
+        assert_eq!(1, ts.entries.get(DATE).unwrap().entries.len())
     }
 
     #[test]
@@ -157,19 +161,23 @@ mod tests {
             minute: 16,
         });
 
-        let mut ts = TS {
-            entries: vec![DateEntry {
+        let mut entries = HashMap::new();
+        entries.insert(
+            DATE.to_string(),
+            DateEntry {
                 date: DATE.to_string(),
                 entries: vec![slot],
-            }],
-        };
+            },
+        );
+
+        let mut ts = TS { entries };
 
         // Act
         ts.append_entry_for("3/18/2023");
 
         // Assert
         assert_eq!(1, ts.entries.len());
-        let expected_date = ts.entries.get(0).unwrap();
+        let expected_date = ts.entries.get(DATE).unwrap();
         assert_eq!(1, expected_date.entries.len());
         let expected_slot = expected_date.entries.get(0).unwrap();
         assert!(expected_slot.end.is_some())
@@ -189,19 +197,23 @@ mod tests {
             }),
         };
 
-        let mut ts = TS {
-            entries: vec![DateEntry {
+        let mut entries = HashMap::new();
+        entries.insert(
+            DATE.to_owned(),
+            DateEntry {
                 date: DATE.to_string(),
                 entries: vec![slot],
-            }],
-        };
+            },
+        );
+
+        let mut ts = TS { entries };
 
         // Act
         ts.append_entry_for("3/18/2023");
 
         // Assert
         assert_eq!(1, ts.entries.len());
-        let expected_date = ts.entries.get(0).unwrap();
+        let expected_date = ts.entries.get(DATE).unwrap();
         assert_eq!(2, expected_date.entries.len());
         let expected_slot = expected_date.entries.get(0).unwrap();
         assert!(expected_slot.end.is_some())

@@ -1,4 +1,4 @@
-use std::num::ParseIntError;
+use std::{collections::HashMap, num::ParseIntError};
 
 use crate::entities::*;
 
@@ -39,7 +39,7 @@ impl TS {
         }
 
         // TODO: Can't I just make collect work for DateEntry?
-        let mut entries: Vec<DateEntry> = vec![];
+        let mut entries: HashMap<String, DateEntry> = HashMap::new();
 
         // ? Can't I just trim all whitespaces at the start? we'll refactor this later.
         text.lines()
@@ -70,10 +70,14 @@ impl TS {
                         }
                     });
 
-                entries.push(DateEntry {
-                    date: date.to_string(),
-                    entries: t_entries,
-                });
+                // ? I guess I cannot avoid the 2 string copies huh?
+                entries.insert(
+                    date.to_owned(),
+                    DateEntry {
+                        date: date.to_owned(),
+                        entries: t_entries,
+                    },
+                );
             });
 
         Ok(TS { entries })
@@ -84,7 +88,7 @@ impl ToText for TS {
     fn to_text(&self) -> String {
         let mut content = String::new();
 
-        for e in &self.entries {
+        for (_date, e) in &self.entries {
             content.push_str(LINE_START_CHARACTER);
             content.push_str(SPACE_CHARACTER);
             content.push_str(&e.date);
@@ -179,7 +183,7 @@ impl ToText for TimeEntry {
 
 #[cfg(test)]
 mod tests {
-    use std::vec;
+    use std::{collections::HashMap, vec};
 
     use crate::entities::*;
 
@@ -221,7 +225,7 @@ mod tests {
         let ts = TS::parse(text)?;
 
         // Assert
-        assert_eq!("03/21/2023", ts.entries.get(0).unwrap().date);
+        assert_eq!("03/21/2023", ts.entries.get("03/21/2023").unwrap().date);
         Ok(())
     }
 
@@ -265,7 +269,8 @@ mod tests {
             }],
         };
 
-        let entries = vec![entry];
+        let mut entries = HashMap::new();
+        entries.insert("03/14/2023".to_owned(), entry);
 
         let expected = TS { entries };
         let ts = TS::parse(&text).unwrap();
@@ -323,6 +328,8 @@ mod tests {
     }
 
     mod printing {
+        use std::collections::HashMap;
+
         use chrono::{DateTime, Local};
 
         use crate::{
@@ -358,7 +365,9 @@ mod tests {
                 }],
             };
 
-            let entries = vec![entry];
+            let mut entries = HashMap::new();
+            entries.insert(date.to_owned(), entry);
+
             let ts = TS { entries };
 
             let content = ts.to_text();
