@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Display, num::ParseIntError};
 
 use chrono::{Local, Timelike};
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Punch {
     In(TimeEntry),
     Out(TimeEntry),
@@ -40,10 +40,10 @@ impl TS {
                                 minute: now.minute(),
                             }));
                         } else {
-                            _ = ts.end.insert(TimeEntry {
+                            _ = ts.end.insert(Punch::Out(TimeEntry {
                                 hour: now.hour(),
                                 minute: now.minute(),
-                            });
+                            }));
                         }
                     }
                     // if not add one.
@@ -55,50 +55,47 @@ impl TS {
             }
             None => {
                 let date_entry = DateEntry {
-                    date: date.to_owned(), // it's okay lets make a copy here.
+                    date: date.to_owned(),
                     entries: vec![TimeSlot::new(TimeEntry {
                         hour: now.hour(),
                         minute: now.minute(),
                     })],
                 };
 
-                self.entries.insert(date_entry.date.to_owned(), date_entry);
+                self.entries.insert(date.to_owned(), date_entry);
             }
         }
     }
 
     pub fn get_last_punch_for(&mut self, date: &str) -> Option<Punch> {
-        let date_entry = self.entries.get(date);
+        let date_entry = self.entries.get(date)?;
+        let last = date_entry.entries.last()?;
 
-        let now = Local::now().time();
-
-        // TODO: Find this
-        Some(Punch::In(TimeEntry { hour: 1, minute: 1 }))
+        if last.end.is_none() {
+            return last.start;
+        } else {
+            last.end
+        }
     }
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Date {
-    // TODO: Impl a date concept in our domain.
-}
-
-#[derive(Debug, PartialEq, Eq)]
 pub struct DateEntry {
-    pub date: String, // TODO: A strongly typed date?
+    pub date: String,
     pub entries: Vec<TimeSlot>,
 }
 
 /// A time slot is a combination of a start [TimeEntry] and an end [TimeEntry]
 #[derive(Debug, PartialEq, Eq)]
 pub struct TimeSlot {
-    pub start: Option<TimeEntry>, // TODO: We can drop the optional here. A time slot will exist when start exists.
-    pub end: Option<TimeEntry>,
+    pub start: Option<Punch>, // TODO: We can drop the optional here. A time slot will exist when start exists.
+    pub end: Option<Punch>,
 }
 
 impl TimeSlot {
     pub fn new(start: TimeEntry) -> Self {
         TimeSlot {
-            start: Some(start),
+            start: Some(Punch::In(start)),
             end: None,
         }
     }
@@ -109,7 +106,7 @@ pub type Hour = u32; // I wish this wast more strict.
 /// 0 to 59
 pub type Minute = u32; // I wish this wast more strict.
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TimeEntry {
     pub hour: Hour,
     pub minute: Minute,
@@ -134,6 +131,8 @@ impl Display for TimeEntry {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
+
+    use crate::entities::Punch;
 
     use super::{DateEntry, TimeEntry, TimeSlot, TS};
 
@@ -187,14 +186,14 @@ mod tests {
     fn appending_a_date_entry_to_a_non_empty_sheet_that_has_a_slot_completed_creates_another() {
         // Arrange
         let slot = TimeSlot {
-            start: Some(TimeEntry {
+            start: Some(Punch::In(TimeEntry {
                 hour: 18,
                 minute: 16,
-            }),
-            end: Some(TimeEntry {
+            })),
+            end: Some(Punch::Out(TimeEntry {
                 hour: 18,
                 minute: 16,
-            }),
+            })),
         };
 
         let mut entries = HashMap::new();

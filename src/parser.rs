@@ -115,10 +115,10 @@ impl TimeSlot {
         let end = slot.next().ok_or(ParsingError())?; // TODO: What error?
 
         Ok(TimeSlot {
-            start: Some(TimeEntry::parse(start)?),
+            start: Some(Punch::In(TimeEntry::parse(start)?)),
             end: match end.is_empty() {
                 true => None,
-                false => Some(TimeEntry::parse(end)?),
+                false => Some(Punch::Out(TimeEntry::parse(end)?)),
             },
         })
     }
@@ -143,6 +143,15 @@ impl From<ParseIntError> for ParsingError {
     fn from(_err: ParseIntError) -> Self {
         // TODO: Transform the parsing err.
         ParsingError()
+    }
+}
+
+impl ToText for Punch {
+    fn to_text(&self) -> String {
+        match self {
+            Punch::In(te) => te.to_text(),
+            Punch::Out(te) => te.to_text(),
+        }
     }
 }
 
@@ -264,8 +273,8 @@ mod tests {
         let entry = DateEntry {
             date: "03/14/2023".to_string(),
             entries: vec![TimeSlot {
-                start: Some(TimeEntry::of("10", "10").unwrap()),
-                end: Some(TimeEntry::of("13", "15").unwrap()),
+                start: Some(Punch::In(TimeEntry::of("10", "10").unwrap())),
+                end: Some(Punch::Out(TimeEntry::of("13", "15").unwrap())),
             }],
         };
 
@@ -305,8 +314,8 @@ mod tests {
         let actual = TimeSlot::parse(time_slot);
 
         let expected = TimeSlot {
-            start: Some(TimeEntry::of("10", "00").unwrap()),
-            end: Some(TimeEntry::of("15", "00").unwrap()),
+            start: Some(Punch::In(TimeEntry::of("10", "00").unwrap())),
+            end: Some(Punch::Out(TimeEntry::of("15", "00").unwrap())),
         };
 
         assert_eq!(expected, actual.unwrap());
@@ -319,7 +328,7 @@ mod tests {
         let actual = TimeSlot::parse(ts)?;
 
         let expected = TimeSlot {
-            start: Some(TimeEntry::of("10", "00").unwrap()),
+            start: Some(Punch::In(TimeEntry::of("10", "00").unwrap())),
             end: None,
         };
 
@@ -333,7 +342,7 @@ mod tests {
         use chrono::{DateTime, Local};
 
         use crate::{
-            entities::{DateEntry, TimeEntry, TimeSlot, TS},
+            entities::{DateEntry, Punch, TimeEntry, TimeSlot, TS},
             parser::{ParsingError, ToText, INDENTATION_CHARACTER, NEW_LINE},
         };
 
@@ -360,8 +369,8 @@ mod tests {
             let entry = DateEntry {
                 date: date.to_string(),
                 entries: vec![TimeSlot {
-                    start: Some(TimeEntry::of("10", "10").unwrap()),
-                    end: Some(TimeEntry::of("10", "10").unwrap()),
+                    start: Some(Punch::In(TimeEntry::of("10", "10").unwrap())),
+                    end: Some(Punch::Out(TimeEntry::of("10", "10").unwrap())),
                 }],
             };
 

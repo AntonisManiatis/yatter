@@ -21,18 +21,13 @@ const DATE_FORMAT: &str = "%d-%m-%Y";
 /// Anything that can go wrong.
 #[derive(Debug)]
 pub enum TrackError {
-    /**
-     * sheet not found.
-     */
+    /// Sheet not found.
     NotFound,
 
-    /**
-     */
+    /// Sheet could not be parsed.
     NotParsed, // TODO: This will have extra data in the future.
 
-    /**
-     * sheet couldn't be persisted to the underlying storage.
-     */
+    /// Sheet could not be saved.
     NotSaved,
 }
 
@@ -88,6 +83,7 @@ pub fn punch(target_project: Option<PathBuf>) -> Result<Punch, TrackError> {
         return Ok(punch);
     }
 
+    // TODO: Not exactly correct. The line above should NOT fail, we'll re-write this more idiomatically.
     Err(TrackError::NotFound)
 }
 
@@ -104,6 +100,3 @@ fn find_file_for_date(dir_path: &PathBuf, date: &DateTime<Local>) -> PathBuf {
 
     fp
 }
-
-#[cfg(test)]
-mod tests {}

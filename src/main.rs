@@ -14,6 +14,7 @@ fn main() -> Result<(), TrackError> {
         Action::Punch(args) => {
             if let Ok(punch) = punch(args.target_project) {
                 match punch {
+                    // TODO: An enhancement would be to also print the project.
                     Punch::In(at) => println!("You punched in at {}", at),
                     Punch::Out(at) => println!("You punched out at {}", at),
                 }
