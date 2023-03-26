@@ -60,23 +60,25 @@ Let's assume you have your files structured like this:
 
 And you have a task that you'd like to track your time for `project_x`.
 
+<!-- TODO: Should I add comments for what the tool prints to the screen? -->
+
 Open up a terminal and type:
+
+```
+yatter init ./work/project_one
+```
+
+To punch in for that project:
 
 ```
 yatter punch ./work/project_one
 ```
 
-You get:
-
-After you are done with your task you again use to "punch-out:
+After you are done with your task you again use `punch` again to punch out:
 
 ```
-yatter punch ./work/project_x
+yatter punch ./work/project_x -d "Added search functionality to navbar."
 ```
-
-<!-- TODO: Touch this up a bit. -->
-
-if you have a lil' peek into `./work/project_one/` now you'll find that `yatter` has created a directory called `hours/{current-year}/` and in it there's a file called `{MM-YYYY}` where MM and YYYY are the current month & year.
 
 For additional info please use:
 
@@ -89,8 +91,8 @@ yatter --help
 Here are a few ideas/features that I'll implement in the future:
 
 - Automatic punch-out when you switch projects.
-- Explore the possibility for a `git` integration using hooks.
 - Possibility to send timesheets to other web-based time tracking services like HeavenHR, etc with a push of a button (or command in our case 😄).
+- Explore the possibility for a `git` integration using hooks.
 
 ## Contributing
 
