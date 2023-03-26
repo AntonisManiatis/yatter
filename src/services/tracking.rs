@@ -8,7 +8,7 @@ use std::{error, fmt::Display, fs, io::Error, io::ErrorKind, path::PathBuf};
 use chrono::{DateTime, Datelike, Local};
 
 /// Name of the directory that holds all the subdirectories for each year.
-pub const DEFAULT_DIR_NAME: &str = "hours";
+pub const YATTER_DIR_NAME: &str = ".yatter";
 // TODO: Would be nice if we could find the format the local computer uses for dates and use that.
 /// How we format dates of created files.
 const FILE_NAME_FORMAT: &str = "%m-%Y";
@@ -76,7 +76,7 @@ pub fn init(target_project: Option<PathBuf>) -> Result<(), Error> {
         dp.push(tp)
     }
 
-    dp.push(DEFAULT_DIR_NAME);
+    dp.push(YATTER_DIR_NAME);
     dp.push(now.year().to_string());
 
     if !dp.exists() {
@@ -96,7 +96,7 @@ pub fn punch(target_project: Option<PathBuf>) -> Result<Punch, PunchError> {
         dp.push(tp)
     }
 
-    dp.push(DEFAULT_DIR_NAME);
+    dp.push(YATTER_DIR_NAME);
     dp.push(now.year().to_string());
 
     if !dp.exists() {

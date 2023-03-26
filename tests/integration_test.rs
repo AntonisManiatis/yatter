@@ -3,7 +3,7 @@ use std::{fs, path::Path};
 use chrono::{Datelike, Local};
 use yatter::{
     self,
-    services::tracking::{init, punch, PunchError, DEFAULT_DIR_NAME},
+    services::tracking::{init, punch, PunchError, YATTER_DIR_NAME},
 };
 
 #[test]
@@ -40,7 +40,7 @@ fn init_creates_a_directory_in_the_specified_path_if_it_not_exists() {
 fn punching_without_providing_any_args_creates_the_hours_dir_in_the_current_working_dir(
 ) -> Result<(), PunchError> {
     // Arrange
-    let dir: String = format!("./{}/", DEFAULT_DIR_NAME);
+    let dir: String = format!("./{}/", YATTER_DIR_NAME);
     init(None)?;
 
     // Act
@@ -65,7 +65,7 @@ fn providing_a_target_directory_uses_that_as_root_for_the_hours_dir() -> Result<
     // Assert
     let p_as_string = format!(
         "./a_project/{}/{}",
-        DEFAULT_DIR_NAME,
+        YATTER_DIR_NAME,
         today.year().to_string()
     );
 
