@@ -14,9 +14,8 @@ pub const YATTER_DIR_NAME: &str = ".yatter";
 const FILE_NAME_FORMAT: &str = "%m-%Y";
 /// Used in case an OS requires a file extension such as Windows.
 const EXPECTED_EXTENSION: &str = "txt";
-// TODO: Would be nice if we could find the format the local computer uses for dates and use that.
-/// How we formate dates for each day.
-const DATE_FORMAT: &str = "%d-%m-%Y";
+/// ISO-8601 date format specifier.
+const DATE_FORMAT: &str = "%F";
 
 /// Anything that can go wrong while punching.
 #[derive(Debug, PartialEq)]
@@ -97,6 +96,7 @@ pub fn punch(target_project: Option<PathBuf>) -> Result<Punch, PunchError> {
     }
 
     dp.push(YATTER_DIR_NAME);
+    // TODO: That's a potential bug. we should check for /.yatter dir only.
     dp.push(now.year().to_string());
 
     if !dp.exists() {
