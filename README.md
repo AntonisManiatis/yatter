@@ -1,6 +1,6 @@
 # Yatter
 
-Yet another Time Tracker.
+Yet another Time Tracker is a time tracker for your terminal.
 
 ## About
 

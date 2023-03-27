@@ -11,19 +11,21 @@ pub struct Args {
 
 #[derive(Debug, Parser)]
 pub struct InitArgs {
-    pub target_project: Option<PathBuf>,
+    pub project_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Parser)]
 pub struct PunchArgs {
     /// Path of the target project you want to punch for.
-    pub target_project: Option<PathBuf>,
+    pub project_path: Option<PathBuf>,
+    #[arg(short, long)]
+    pub description: String,
 }
 
 #[derive(Debug, Parser)]
 pub struct StatusArgs {
     /// Path of the target project you want to punch for.
-    pub target_project: Option<PathBuf>,
+    pub project_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Subcommand)]

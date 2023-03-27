@@ -3,7 +3,14 @@ use crate::{
     parser::{ParsingError, ToText},
 };
 
-use std::{error, fmt::Display, fs, io::Error, io::ErrorKind, path::PathBuf};
+use std::{
+    error,
+    fmt::Display,
+    fs::{self},
+    io::Error,
+    io::ErrorKind,
+    path::PathBuf,
+};
 
 use chrono::{DateTime, Datelike, Local};
 
@@ -64,11 +71,26 @@ impl From<Error> for PunchError {
 }
 
 #[derive(Debug)]
-pub enum InitError {}
+pub enum InitError {
+    DirError,
+}
 
-pub fn init(target_project: Option<PathBuf>) -> Result<(), Error> {
-    let now = Local::now();
+impl Display for InitError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
 
+impl From<Error> for InitError {
+    fn from(err: Error) -> Self {
+        match err.kind() {
+            _ => InitError::DirError,
+        }
+    }
+}
+
+/// Initializes a special yatter dir.
+pub fn init(target_project: Option<PathBuf>) -> Result<(), InitError> {
     let mut dp: PathBuf = PathBuf::new();
 
     if let Some(tp) = target_project {
@@ -76,7 +98,6 @@ pub fn init(target_project: Option<PathBuf>) -> Result<(), Error> {
     }
 
     dp.push(YATTER_DIR_NAME);
-    dp.push(now.year().to_string());
 
     if !dp.exists() {
         fs::create_dir_all(&dp)?
@@ -96,11 +117,13 @@ pub fn punch(target_project: Option<PathBuf>) -> Result<Punch, PunchError> {
     }
 
     dp.push(YATTER_DIR_NAME);
-    // TODO: That's a potential bug. we should check for /.yatter dir only.
-    dp.push(now.year().to_string());
-
     if !dp.exists() {
         return Err(PunchError::ProjectNotFound);
+    }
+
+    dp.push(now.year().to_string());
+    if !dp.exists() {
+        fs::create_dir_all(&dp)?
     }
 
     let fp = find_file_for_date(&dp, &now);
@@ -129,7 +152,12 @@ pub fn punch(target_project: Option<PathBuf>) -> Result<Punch, PunchError> {
     Err(PunchError::NotFound)
 }
 
-pub fn status(target_project: Option<PathBuf>) -> Result<(), PunchError> {
+#[derive(Debug)]
+pub enum StatusError {
+    ProjectNotFound,
+}
+
+pub fn status(target_project: Option<PathBuf>) -> Result<(), StatusError> {
     // TODO: Check result.
     todo!()
 }

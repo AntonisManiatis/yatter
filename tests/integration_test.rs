@@ -3,7 +3,7 @@ use std::{fs, path::Path};
 use chrono::{Datelike, Local};
 use yatter::{
     self,
-    services::tracking::{init, punch, PunchError, YATTER_DIR_NAME},
+    services::tracking::{init, punch, InitError, PunchError, YATTER_DIR_NAME},
 };
 
 #[test]
@@ -38,13 +38,13 @@ fn init_creates_a_directory_in_the_specified_path_if_it_not_exists() {
 
 #[test]
 fn punching_without_providing_any_args_creates_the_hours_dir_in_the_current_working_dir(
-) -> Result<(), PunchError> {
+) -> Result<(), InitError> {
     // Arrange
     let dir: String = format!("./{}/", YATTER_DIR_NAME);
     init(None)?;
 
     // Act
-    punch(None)?;
+    punch(None).unwrap(); // TODO: bad unwrap! bad boy!
 
     // Assert
     assert!(Path::new(&dir).exists());
@@ -52,7 +52,7 @@ fn punching_without_providing_any_args_creates_the_hours_dir_in_the_current_work
 }
 
 #[test]
-fn providing_a_target_directory_uses_that_as_root_for_the_hours_dir() -> Result<(), PunchError> {
+fn providing_a_target_directory_uses_that_as_root_for_the_hours_dir() -> Result<(), InitError> {
     // Arrange
     let target_project = Path::new("./a_project/");
     let today = Local::now();
@@ -60,7 +60,7 @@ fn providing_a_target_directory_uses_that_as_root_for_the_hours_dir() -> Result<
     init(Some(target_project.to_path_buf()))?;
 
     // Act
-    punch(Some(target_project.to_path_buf()))?;
+    punch(Some(target_project.to_path_buf())).unwrap(); // TODO: bad unwrap! bad boy!
 
     // Assert
     let p_as_string = format!(
