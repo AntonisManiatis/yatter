@@ -1,5 +1,9 @@
 # Yatter
 
+[![license-mit](https://badgen.net/badge/license/MIT/blue)](https://github.com/AntonisManiatis/yatter/blob/master/LICENSE_MIT)
+[![license-apache](https://badgen.net/badge/license/Apache-2.0/blue)](https://github.com/AntonisManiatis/yatter/blob/master/LICENSE_APACHE)
+[![Rust](https://github.com/AntonisManiatis/yatter/actions/workflows/rust.yml/badge.svg)](https://github.com/AntonisManiatis/yatter/actions/workflows/rust.yml)
+
 Yet another Time Tracker is a time tracker for your terminal.
 
 ## About

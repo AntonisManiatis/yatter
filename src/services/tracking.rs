@@ -3,14 +3,7 @@ use crate::{
     parser::{ParsingError, ToText},
 };
 
-use std::{
-    error,
-    fmt::Display,
-    fs::{self},
-    io::Error,
-    io::ErrorKind,
-    path::PathBuf,
-};
+use std::{error, fmt::Display, fs, io::Error, io::ErrorKind, path::PathBuf};
 
 use chrono::{DateTime, Datelike, Local};
 
