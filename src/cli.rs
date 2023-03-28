@@ -19,7 +19,7 @@ pub struct PunchArgs {
     /// Path of the target project you want to punch for.
     pub project_path: Option<PathBuf>,
     #[arg(short, long)]
-    pub description: String,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Parser)]

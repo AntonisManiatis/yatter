@@ -32,7 +32,7 @@ fn main() {
             },
         },
         Action::Status(args) => match status(args.project_path) {
-            Ok(_) => println!(""), // TODO: Add msg.
+            Ok(_) => print!("Add a message boss! :D"), // TODO: Add msg.
             Err(status_err) => match status_err {
                 StatusError::ProjectNotFound => eprintln!("Error: no project found in {}", ""), // TODO: proj name?
             },

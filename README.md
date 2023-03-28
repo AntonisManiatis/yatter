@@ -4,27 +4,17 @@
 [![license-apache](https://badgen.net/badge/license/Apache-2.0/blue)](https://github.com/AntonisManiatis/yatter/blob/master/LICENSE_APACHE)
 [![Rust](https://github.com/AntonisManiatis/yatter/actions/workflows/rust.yml/badge.svg)](https://github.com/AntonisManiatis/yatter/actions/workflows/rust.yml)
 
-Yet another Time Tracker is a time tracker for your terminal.
+Yet another Time Tracker is a CLI punch in & out time tracker.
 
-## About
+<!-- TODO: Maybe a gif here? -->
 
-I don't think there's a single developer out there that enjoys time tracking and if you do, you are as rare as a unicorn. I find it to be a tedious chore and the web based solutions do not help. The entire process is so slow and in my case I have to add entries in more than one system and so I avoid using them until I absolutely have to use them. Instead I write the entries in a text file and go through the pain of importing everything by hand every week.
+Another one? Aren't there like a bunch of better options out there?
 
-### A potential solution?
-
-I've been thinking there has to be a way to automate this process (and I also need an excuse to learn Rust 😄) and thus `yatter` was born.
-
-Imagine a world where you can type a command like `sync` and have a timesheet uploaded to multiple external systems.
-
-_Magic 🪄_
-
-As of now, it only solves the "manually typing in entries in a file" problem. But I'm exploring the possibilities of integrating it with other systems.
-
-See the [Roadmap](#roadmap) section for info on that and if you have a similar problem and want to contribute can have a look at the [Contributing](#contributing) section. 😊
+Certainly! I just needed an excuse to start learning Rust. 😄
 
 ## Installation
 
-I'd be surprised if anyone else finds this tool useful and so if you want to install it you'd have to build the binaries. To do that you'd need to have [Rust](https://www.rust-lang.org/tools/install) installed.
+There isn't a released version of yatter yet and so if you want to install it you'd have to build the binaries yourself. To do that you'd need to have [Rust](https://www.rust-lang.org/tools/install) installed.
 
 After that you can clone this repo:
 
@@ -40,11 +30,30 @@ cargo build --release
 
 After `cargo` is finished you'll find the compiled binary for your OS & architecture in `./target/release`.
 
-Finally set a [Path environment variable](<https://www3.ntu.edu.sg/home/ehchua/programming/howto/Environment_Variables.html#:~:text=To%20set%20(or%20change)%20a,it%20to%20an%20empty%20string.>) pointing to the binary so you can use `yatter` from your shell (is this correct?).
+Finally set a [Path environment variable](<https://www3.ntu.edu.sg/home/ehchua/programming/howto/Environment_Variables.html#:~:text=To%20set%20(or%20change)%20a,it%20to%20an%20empty%20string.>) pointing to the binary so you can use `yatter` from your shell.
+
+### Starship
+
+If you have [starship](https://starship.rs/) you can add this to your starship.toml.
+
+<!-- TODO: Not final! -->
+
+```
+[custom.yatter]
+command = "yatter status"
+when = "yatter status"
+symbol = "" # test one, I don't want to get sued.
+format = " [$symbol($output)]($style) "
+style = "bold yellow"
+```
+
+Here's how that would look like:
+
+<!-- TODO: Add a picture here. -->
 
 ## Usage
 
-Let's assume you have your files structured like this:
+Let's assume you have your work projects structured like this:
 
 ```
 .
@@ -64,24 +73,28 @@ Let's assume you have your files structured like this:
 
 And you have a task that you'd like to track your time for `project_x`.
 
-<!-- TODO: Should I add comments for what the tool prints to the screen? -->
-
 Open up a terminal and type:
 
 ```
-yatter init ./work/project_one
+yatter init ./work/project_x
 ```
 
 To punch in for that project:
 
 ```
-yatter punch ./work/project_one
+yatter punch ./work/project_x
 ```
 
-After you are done with your task you again use `punch` again to punch out:
+After you are done with your task you again use `punch` to punch out:
 
 ```
 yatter punch ./work/project_x -d "Added search functionality to navbar."
+```
+
+To check if you have punched in or out for a project:
+
+```
+yatter status ./work/project_x
 ```
 
 For additional info please use:
@@ -90,19 +103,11 @@ For additional info please use:
 yatter --help
 ```
 
-## Roadmap
-
-Here are a few ideas/features that I'll implement in the future:
-
-- Automatic punch-out when you switch projects.
-- Possibility to send timesheets to other web-based time tracking services like HeavenHR, etc with a push of a button (or command in our case 😄).
-- Explore the possibility for a `git` integration using hooks.
-
 ## Contributing
 
-<!-- TODO: Touch this up a bit. -->
+If you have any ideas or features to suggest, or found any bugs.
 
-If you have any ideas, you found any nastyyy bugs or just want to write some Rust contributions are welcomed!
+See [CONTRIBUTING.md](https://github.com/AntonisManiatis/yatter/tree/master/.github/CONTRIBUTING.md) for details.
 
 ## License
 
