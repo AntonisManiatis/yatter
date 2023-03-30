@@ -1,4 +1,4 @@
-use std::{collections::HashMap, num::ParseIntError};
+use std::{collections::BTreeMap, num::ParseIntError};
 
 use crate::entities::*;
 
@@ -39,7 +39,7 @@ impl TS {
         }
 
         // TODO: Can't I just make collect work for DateEntry?
-        let mut entries: HashMap<String, DateEntry> = HashMap::new();
+        let mut entries: BTreeMap<String, DateEntry> = BTreeMap::new();
 
         // ? Can't I just trim all whitespaces at the start? we'll refactor this later.
         text.lines()
@@ -192,7 +192,7 @@ impl ToText for TimeEntry {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashMap, vec};
+    use std::{collections::BTreeMap, vec};
 
     use crate::entities::*;
 
@@ -278,7 +278,7 @@ mod tests {
             }],
         };
 
-        let mut entries = HashMap::new();
+        let mut entries = BTreeMap::new();
         entries.insert("03/14/2023".to_owned(), entry);
 
         let expected = TS { entries };
@@ -337,7 +337,7 @@ mod tests {
     }
 
     mod printing {
-        use std::collections::HashMap;
+        use std::collections::BTreeMap;
 
         use chrono::{DateTime, Local};
 
@@ -374,7 +374,7 @@ mod tests {
                 }],
             };
 
-            let mut entries = HashMap::new();
+            let mut entries = BTreeMap::new();
             entries.insert(date.to_owned(), entry);
 
             let ts = TS { entries };

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, num::ParseIntError};
+use std::{collections::BTreeMap, fmt::Display, num::ParseIntError};
 
 use chrono::{Local, Timelike};
 
@@ -11,13 +11,13 @@ pub enum Punch {
 /// A time sheet
 #[derive(Debug, PartialEq, Eq)]
 pub struct TS {
-    pub entries: HashMap<String, DateEntry>,
+    pub entries: BTreeMap<String, DateEntry>,
 }
 
 impl TS {
     pub fn new() -> Self {
         TS {
-            entries: HashMap::new(),
+            entries: BTreeMap::new(),
         }
     }
 
@@ -130,7 +130,7 @@ impl Display for TimeEntry {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
     use crate::entities::Punch;
 
@@ -160,7 +160,7 @@ mod tests {
             minute: 16,
         });
 
-        let mut entries = HashMap::new();
+        let mut entries = BTreeMap::new();
         entries.insert(
             DATE.to_string(),
             DateEntry {
@@ -196,7 +196,7 @@ mod tests {
             })),
         };
 
-        let mut entries = HashMap::new();
+        let mut entries = BTreeMap::new();
         entries.insert(
             DATE.to_owned(),
             DateEntry {
