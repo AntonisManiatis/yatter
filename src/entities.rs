@@ -123,8 +123,26 @@ impl TimeEntry {
 
 impl Display for TimeEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // TODO: Parser has similar logic.
-        write!(f, "{}:{}", self.hour, self.minute)
+        // ! this is repeated in the parser mod, maybe we should have 1 place to display time?
+        let mut buffer = String::new();
+
+        // ? perhaps not the greatest implementation but it works :D
+        let mut hour = self.hour.to_string();
+        if hour.len() != 2 {
+            hour.insert_str(0, "0");
+        }
+
+        buffer.push_str(&hour);
+        buffer.push_str(":");
+
+        let mut minute = self.minute.to_string();
+        if minute.len() != 2 {
+            minute.insert_str(0, "0");
+        }
+
+        buffer.push_str(&minute);
+
+        write!(f, "{}:{}", hour, minute)
     }
 }
 
